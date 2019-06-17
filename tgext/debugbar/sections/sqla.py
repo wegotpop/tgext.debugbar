@@ -69,9 +69,6 @@ except ImportError:
 
 def enable_sqlalchemy(*args, **kw):
     if has_sqla:
-        if "sqlalchemy.json_serializer" in config:
-            json_encoder = config["sqlalchemy.json_serializer"]
-
         event.listen(Engine, "before_cursor_execute", _before_cursor_execute)
         event.listen(Engine, "after_cursor_execute", _after_cursor_execute)
 
@@ -92,6 +89,9 @@ class SQLADebugSection(DebugSection):
         return _('SQLAlchemy')
 
     def _gather_queries(self):
+        if "sqlalchemy.json_serializer" in config:
+            json_encoder = config["sqlalchemy.json_serializer"]
+
         queries = getattr(request, 'tgdb_sqla_queries', [])
         if not queries:
             return []
