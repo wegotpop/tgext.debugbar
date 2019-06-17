@@ -6,7 +6,6 @@ import weakref
 import logging
 import datetime
 
-from tg import config
 from tg._compat import unicode_text
 
 try:
@@ -20,7 +19,7 @@ class ExtendedJSONEncoder(json.JSONEncoder):
             return str(obj)
         else:
             return json.JSONEncoder.default(self, obj)
-json_encoder = ExtendedJSONEncoder() if "sqlalchemy.json_serializer" not in config else config["sqlalchemy.json_serializer"]
+json_encoder = lambda x: json.dumps(x, cls=ExtendedJSONEncoder)
 
 import tg
 from tg import config, request, app_globals
@@ -90,6 +89,9 @@ class SQLADebugSection(DebugSection):
         return _('SQLAlchemy')
 
     def _gather_queries(self):
+        if "sqlalchemy.json_serializer" in config:
+            json_encoder = config["sqlalchemy.json_serializer"]
+
         queries = getattr(request, 'tgdb_sqla_queries', [])
         if not queries:
             return []
@@ -99,7 +101,7 @@ class SQLADebugSection(DebugSection):
             is_select = query['statement'].strip().lower().startswith('select')
             params = ''
             try:
-                params = json_encoder.encode(query['parameters'])
+                params = json_encoder(query['parameters'])
             except TypeError:
                 return 'Unable to serialize parameters of the query'
 
