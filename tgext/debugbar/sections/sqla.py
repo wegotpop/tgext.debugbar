@@ -6,6 +6,7 @@ import weakref
 import logging
 import datetime
 
+from tg import config
 from tg._compat import unicode_text
 
 try:
@@ -19,7 +20,7 @@ class ExtendedJSONEncoder(json.JSONEncoder):
             return str(obj)
         else:
             return json.JSONEncoder.default(self, obj)
-json_encoder = ExtendedJSONEncoder()
+json_encoder = ExtendedJSONEncoder() if "sqlalchemy.json_serializer" not in config else config["sqlalchemy.json_serializer"]
 
 import tg
 from tg import config, request, app_globals
